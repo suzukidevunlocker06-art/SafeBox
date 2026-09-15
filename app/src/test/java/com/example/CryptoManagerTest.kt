@@ -2,7 +2,10 @@ package com.example
 
 import com.example.security.CryptoManager
 import com.example.security.PasswordStrengthLevel
+import java.io.File
+import org.junit.Assert.assertArrayEquals
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
@@ -57,5 +60,42 @@ class CryptoManagerTest {
 
     val decrypted = CryptoManager.decrypt(encryptedBase64, ivBase64, key)
     assertEquals(originalText, decrypted)
+  }
+
+  @Test
+  fun testByteEncryptionAndDecryptionRoundtrip() {
+    val salt = CryptoManager.generateSalt()
+    val key = CryptoManager.deriveKey("MasterPIN2026", salt)
+    val rawBytes = "SafeBox Binary Encrypted Data Payload".toByteArray(Charsets.UTF_8)
+
+    val (cipherBytes, ivBytes) = CryptoManager.encryptBytes(rawBytes, key)
+    assertNotNull(cipherBytes)
+    assertNotNull(ivBytes)
+    assertFalse(rawBytes.contentEquals(cipherBytes))
+
+    val decryptedBytes = CryptoManager.decryptBytes(cipherBytes, ivBytes, key)
+    assertArrayEquals(rawBytes, decryptedBytes)
+  }
+
+  @Test
+  fun testSha256Checksum() {
+    val data = "SafeBox Integrity Check".toByteArray(Charsets.UTF_8)
+    val hash1 = CryptoManager.calculateSha256(data)
+    val hash2 = CryptoManager.calculateSha256(data)
+    val diffHash = CryptoManager.calculateSha256("Different Content".toByteArray(Charsets.UTF_8))
+
+    assertEquals(hash1, hash2)
+    assertEquals(64, hash1.length) // 64 hex characters
+    assertNotEquals(hash1, diffHash)
+  }
+
+  @Test
+  fun testFileShredding() {
+    val tempFile = File.createTempFile("safebox_test_shred", ".bin")
+    tempFile.writeBytes("Super sensitive confidential data to be shredded".toByteArray(Charsets.UTF_8))
+    assertTrue(tempFile.exists())
+
+    CryptoManager.shredFile(tempFile)
+    assertFalse(tempFile.exists())
   }
 }

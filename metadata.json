@@ -1,6 +1,6 @@
 {
   "name": "SafeBox",
-  "description": "Caja fuerte digital segura para contraseñas, notas confidenciales, tarjetas y documentos con cifrado local AES-256 de conocimiento cero y soporte Android.",
+  "description": "Bóveda segura v2.0 para fotos, videos, documentos, notas privadas y contraseñas con cifrado local AES-256, biometría Keystore, papelera con triturado y conocimiento cero.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

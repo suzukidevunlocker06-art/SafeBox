@@ -1,42 +1,61 @@
-# SafeBox
+# SafeBox 2.0
 
-> **Caja fuerte digital y gestor seguro de credenciales para Android con cifrado local de conocimiento cero.**
+> **Bóveda digital integral, gestor de credenciales y almacén seguro de archivos para Android con cifrado local de conocimiento cero.**
 
-SafeBox es una aplicación móvil nativa desarrollada con Kotlin y Jetpack Compose diseñada para proteger información altamente confidencial: contraseñas, notas privadas, datos de tarjetas bancarias y documentos de identidad. Todos los datos se cifran localmente en el dispositivo utilizando estándares criptográficos avanzados (AES-256 y PBKDF2), garantizando que nadie excepto el propietario del PIN Maestro pueda acceder a la información.
+SafeBox 2.0 es una aplicación móvil nativa desarrollada con Kotlin y Jetpack Compose diseñada para proteger información altamente confidencial: fotos, videos, documentos, notas privadas, credenciales de inicio de sesión, tarjetas bancarias y documentos de identidad. Todos los datos se cifran localmente en el dispositivo utilizando estándares criptográficos recomendados por Android (AES-256-CBC con Android Keystore y PBKDF2WithHmacSHA256 con salt dinámico), garantizando que nadie excepto el propietario del PIN o huella biométrica pueda acceder a la información.
 
 ---
 
-## 🛡️ Características Principales
+## 🛡️ Principios Fundamentales
 
-- **Arquitectura Zero-Knowledge (Conocimiento Cero):**
-  - Los datos nunca salen de tu dispositivo en texto plano.
-  - La clave de cifrado se deriva localmente a partir de tu PIN/contraseña maestra mediante PBKDF2 (`PBKDF2WithHmacSHA256`) con 10,000 iteraciones y salt criptográfico aleatorio.
-  - Ningún servidor tiene acceso a tus claves o contraseñas.
+- **Sin Inteligencia Artificial:** Cero algoritmos opacos, todo el control es determinista y transparente.
+- **Sin Publicidad:** Experiencia limpia y libre de rastreadores o anuncios dentro de la bóveda.
+- **Sin Cuenta Obligatoria:** No requiere registro, correo electrónico ni número telefónico.
+- **Sin Servidor Obligatorio:** Funcionamiento 100% offline y local.
+- **Sin Subida Automática de Archivos:** Tus datos nunca abandonan tu dispositivo sin tu consentimiento explícito.
 
-- **Bóveda Multicategoría:**
-  - 🔑 **Cuentas y Contraseñas:** Nombre de usuario, contraseña, URL del servicio y notas cifradas.
-  - 📝 **Notas Seguras:** Bloc de notas cifrado para información sensible, códigos y registros personales.
-  - 💳 **Tarjetas de Pago:** Número de tarjeta formateado, fecha de expiración, CVV protegido y banco emisor.
-  - 🪪 **Documentos de Identidad:** Pasaportes, DNI, licencias de conducir y números de registro legal.
+---
 
-- **Generador Criptográfico de Contraseñas:**
-  - Generación de contraseñas de alta entropía configurables de 8 a 32 caracteres.
-  - Opciones de mayúsculas, minúsculas, dígitos numéricos y símbolos especiales.
-  - Medidor de robustez criptográfica en tiempo real.
+## 🔐 1. Seguridad Avanzada
 
-- **Auditoría de Seguridad Integrada:**
-  - Análisis automático del estado de seguridad de la bóveda.
-  - Detección de contraseñas débiles o reutilizadas.
-  - Puntuación de salud de seguridad (0 a 100%).
+- **PIN Seguro y Desbloqueo Biométrico:** Acceso protegido por PIN maestro y soporte de huella dactilar mediante `BiometricPrompt` y Android Keystore.
+- **Cifrado Fuerte:** Todos los datos y archivos privados se cifran con AES-256 antes de guardarse en el almacenamiento interno privado.
+- **Protección contra Capturas de Pantalla:** Activación de `FLAG_SECURE` en todas las pantallas sensibles de la bóveda.
+- **Bloqueo Automático Configurable:** Opciones de bloqueo inmediato, tras 30 segundos, 1 minuto, 5 minutos, 10 minutos o al pasar la aplicación a segundo plano (`onPause`/`onStop`).
+- **Control contra Fuerza Bruta:** Registro local de intentos fallidos con retardo progresivo y bloqueo temporal tras fallos consecutivos.
+- **Trituración Segura de Archivos (File Shredding):** Sobrescritura criptográfica en múltiples pasadas (ceros y bytes aleatorios generados con `SecureRandom`) antes de la eliminación en disco.
 
-- **Control de Acceso y Bloqueo:**
-  - Bloqueo instantáneo con un solo toque.
-  - Teclado numérico seguro en pantalla con retroalimentación visual discreta.
-  - Soporte de desbloqueo rápido / biometría.
+---
 
-- **Copias de Seguridad Cifradas:**
-  - Exportación de la bóveda completa cifrada con AES-256.
-  - Copia segura que puede guardarse sin riesgo de exposición de credenciales.
+## 📁 2. Funcionalidades de la Bóveda v2.0
+
+- 🖼️ **Galería Multimedia Privada:**
+  - Importación y cifrado seguro de fotos personales y familiares.
+  - Visor interactivo con zoom gestual, rotación y soporte para compartir seguro vía `FileProvider`.
+- 🎥 **Videos Ocultos:**
+  - Cifrado seguro de videos confidenciales.
+  - Reproductor integrado en entorno protegido con controles de reproducción.
+- 📄 **Documentos Confidenciales:**
+  - Almacén cifrado para archivos PDF, TXT, JSON, DOCX, XLS y hojas de cálculo.
+  - Visor de texto integrado con búsqueda y opciones para copiar contenido al portapapeles.
+- 📝 **Notas Privadas Protegidas:**
+  - Creación, edición, categorización y conteo de palabras en tiempo real.
+  - Búsqueda instantánea dentro del cuerpo de las notas.
+- 🔑 **Cuentas y Contraseñas:**
+  - Gestor de credenciales con generador de contraseñas de alta entropía.
+  - Auditoría de seguridad con detección de contraseñas débiles o reutilizadas.
+  - Copia rápida al portapapeles con borrado automático tras 30 segundos.
+- 💳 **Tarjetas de Pago e Identidades:**
+  - Almacenamiento seguro de tarjetas con validación y documentos de identidad.
+- 🗑️ **Papelera de Reciclaje Segura:**
+  - Los archivos eliminados se mueven temporalmente a la papelera con retención configurable de 30 días.
+  - Opciones para restaurar a su ubicación original o triturar definitivamente.
+- ⭐ **Favoritos y Búsqueda Global:**
+  - Marcado de favoritos en todas las categorías (fotos, documentos, notas, contraseñas).
+  - Búsqueda global en tiempo real a través de toda la bóveda.
+- 💾 **Copias de Seguridad Cifradas:**
+  - Exportación de respaldo cifrado con AES-256 en formato JSON.
+  - Restauración completa verificando integridad.
 
 ---
 
@@ -44,23 +63,23 @@ SafeBox es una aplicación móvil nativa desarrollada con Kotlin y Jetpack Compo
 
 - **Lenguaje:** Kotlin 2.2+
 - **Framework UI:** Jetpack Compose (Material Design 3)
-- **Criptografía:** `javax.crypto` (AES-256/CBC/PKCS5Padding, PBKDF2WithHmacSHA256, SecureRandom)
+- **Criptografía:** `javax.crypto` (AES-256/CBC/PKCS5Padding, PBKDF2WithHmacSHA256, Android Keystore, SecureRandom)
+- **Biometría:** `androidx.biometric:biometric` (`BiometricPrompt`)
 - **Arquitectura:** MVVM (Model-View-ViewModel) con StateFlow y corrutinas
 - **Gestión de Dependencias:** Gradle Version Catalogs (`gradle/libs.versions.toml`)
-- **Herramienta de Compilación:** Gradle 9+ con Android Gradle Plugin (AGP) 9.1+
-- **Pruebas:** JUnit 4, Robolectric, Compose UI Testing
-- **Automatización:** GitHub Actions CI/CD para compilación automática y generación de APK
+- **Compilación:** Gradle 9+ con Android Gradle Plugin 9.1+
+- **Pruebas:** JUnit 4, Robolectric, Roborazzi Screenshot Testing
 
 ---
 
 ## ⚙️ Requisitos para Compilar
 
-1. **Java Development Kit (JDK):** Versión 17 o 21 (Temurin o OpenJDK recomendado).
+1. **Java Development Kit (JDK):** Versión 17 o 21 (Temurin u OpenJDK).
 2. **Android SDK:**
-   - `compileSdk`: 36 (Android 16 / 15)
+   - `compileSdk`: 36
    - `minSdk`: 24 (Android 7.0 Nougat o superior)
    - `targetSdk`: 36
-3. **Android Studio:** Ladybug (2024.2) o superior (recomendado para desarrollo visual).
+3. **Android Studio:** Ladybug (2024.2) o superior.
 4. **Sistema Operativo:** Linux, macOS o Windows.
 
 ---
@@ -84,7 +103,6 @@ chmod +x gradlew
 ```
 
 ### 4. Instalar y ejecutar en un dispositivo o emulador conectado
-Conecta un dispositivo Android con depuración USB habilitada o inicia un emulador:
 ```bash
 ./gradlew installDebug
 ```
@@ -94,7 +112,6 @@ Conecta un dispositivo Android con depuración USB habilitada o inicia un emulad
 ## 📦 Instrucciones para Generar el APK
 
 ### Generar APK de Desarrollo (Debug APK)
-Para compilar un APK listo para probar en cualquier dispositivo Android:
 ```bash
 ./gradlew assembleDebug
 ```
@@ -104,7 +121,6 @@ app/build/outputs/apk/debug/app-debug.apk
 ```
 
 ### Generar APK de Producción (Release APK)
-Para generar un APK firmado de producción, configura las variables de entorno para tu almacén de claves (keystore):
 ```bash
 export KEYSTORE_PATH="/ruta/a/tu/upload-keystore.jks"
 export STORE_PASSWORD="tu_password_almacen"
@@ -119,27 +135,15 @@ app/build/outputs/apk/release/app-release.apk
 
 ---
 
-## 🤖 Integración Continua (GitHub Actions)
-
-El repositorio incluye un flujo de trabajo automatizado en `.github/workflows/android.yml`:
-- Se ejecuta automáticamente en cada `push` o `pull request` a la rama `main`.
-- Configura el entorno con JDK 21.
-- Ejecuta el conjunto de pruebas unitarias.
-- Compila automáticamente el APK de prueba (`app-debug.apk`).
-- Publica el APK como un **Artifact** descargable en cada ejecución.
-- En caso de crear una etiqueta de versión (`git tag v1.0.0`), crea automáticamente una **Release en GitHub** adjuntando el APK compilado.
-
----
-
 ## 🔒 Privacidad y Seguridad
 
 - **Sin Telemetría ni Rastreadores:** SafeBox no recopila ni transmite ningún dato analítico ni información de uso.
 - **Sin Dependencias de Servidores Externos:** No requiere registro en la nube de terceros; el control absoluto reside en el usuario.
 - **Protección de Secretos en el Repositorio:** Este repositorio excluye estrictamente mediante `.gitignore` cualquier clave de firma (`.keystore`, `.jks`), credenciales locales (`local.properties`), variables de entorno (`.env`) o claves API.
-- **Destrucción de Claves en Memoria:** Al presionar "Bloquear", la clave activa se destruye en memoria forzando una nueva derivación PBKDF2 con el PIN Maestro.
+- **Destrucción de Claves en Memoria:** Al presionar "Bloquear" o al pasar a segundo plano, la clave activa se destruye en memoria.
 
 ---
 
 ## 🏷️ Versión
-- **Versión:** `v1.0.0`
-- **Código de Versión:** `1`
+- **Versión:** `v2.0.0`
+- **Código de Versión:** `2`

@@ -3,8 +3,9 @@
 *.aar
 *.aab
 
-# Gradle files
+# Gradle & Kotlin files
 .gradle/
+.kotlin/
 build/
 */build/
 

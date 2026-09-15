@@ -66,6 +66,131 @@ object CryptoManager {
     return String(decryptedBytes, Charsets.UTF_8)
   }
 
+  fun encryptBytes(data: ByteArray, secretKey: SecretKey): Pair<ByteArray, ByteArray> {
+    val cipher = Cipher.getInstance(TRANSFORMATION)
+    val iv = ByteArray(16)
+    random.nextBytes(iv)
+    cipher.init(Cipher.ENCRYPT_MODE, secretKey, IvParameterSpec(iv))
+    val encrypted = cipher.doFinal(data)
+    return Pair(encrypted, iv)
+  }
+
+  fun decryptBytes(encryptedData: ByteArray, iv: ByteArray, secretKey: SecretKey): ByteArray {
+    val cipher = Cipher.getInstance(TRANSFORMATION)
+    cipher.init(Cipher.DECRYPT_MODE, secretKey, IvParameterSpec(iv))
+    return cipher.doFinal(encryptedData)
+  }
+
+  fun calculateSha256(data: ByteArray): String {
+    val digest = java.security.MessageDigest.getInstance("SHA-256")
+    val hash = digest.digest(data)
+    return hash.joinToString("") { "%02x".format(it) }
+  }
+
+  fun calculateSha256(inputStream: java.io.InputStream): String {
+    val digest = java.security.MessageDigest.getInstance("SHA-256")
+    val buffer = ByteArray(8192)
+    var read: Int
+    while (inputStream.read(buffer).also { read = it } != -1) {
+      digest.update(buffer, 0, read)
+    }
+    val hash = digest.digest()
+    return hash.joinToString("") { "%02x".format(it) }
+  }
+
+  fun secureShredFile(file: java.io.File): Boolean {
+    return try {
+      if (file.exists()) {
+        val length = file.length()
+        val randomBytes = ByteArray(4096)
+        java.io.RandomAccessFile(file, "rws").use { raf ->
+          var written = 0L
+          while (written < length) {
+            random.nextBytes(randomBytes)
+            val toWrite = minOf(randomBytes.size.toLong(), length - written).toInt()
+            raf.write(randomBytes, 0, toWrite)
+            written += toWrite
+          }
+        }
+        file.delete()
+      } else {
+        true
+      }
+    } catch (e: Exception) {
+      file.delete()
+    }
+  }
+
+  // Android KeyStore Hardware-backed wrapper
+  object KeyStoreHelper {
+    private const val KEYSTORE_PROVIDER = "AndroidKeyStore"
+    private const val MASTER_ALIAS = "SafeBoxMasterKeyAlias"
+    private const val GCM_TRANSFORMATION = "AES/GCM/NoPadding"
+
+    private fun getKeystore(): java.security.KeyStore {
+      val ks = java.security.KeyStore.getInstance(KEYSTORE_PROVIDER)
+      ks.load(null)
+      return ks
+    }
+
+    fun getOrCreateKey(): SecretKey? {
+      return try {
+        val ks = getKeystore()
+        if (ks.containsAlias(MASTER_ALIAS)) {
+          val entry = ks.getEntry(MASTER_ALIAS, null) as? java.security.KeyStore.SecretKeyEntry
+          entry?.secretKey
+        } else {
+          val keyGenerator = javax.crypto.KeyGenerator.getInstance(
+            android.security.keystore.KeyProperties.KEY_ALGORITHM_AES,
+            KEYSTORE_PROVIDER
+          )
+          val spec = android.security.keystore.KeyGenParameterSpec.Builder(
+            MASTER_ALIAS,
+            android.security.keystore.KeyProperties.PURPOSE_ENCRYPT or android.security.keystore.KeyProperties.PURPOSE_DECRYPT
+          )
+            .setBlockModes(android.security.keystore.KeyProperties.BLOCK_MODE_GCM)
+            .setEncryptionPaddings(android.security.keystore.KeyProperties.ENCRYPTION_PADDING_NONE)
+            .setKeySize(256)
+            .build()
+          keyGenerator.init(spec)
+          keyGenerator.generateKey()
+        }
+      } catch (e: Exception) {
+        null
+      }
+    }
+
+    fun wrapMasterKey(masterKeyBytes: ByteArray): Pair<String, String>? {
+      val key = getOrCreateKey() ?: return null
+      return try {
+        val cipher = Cipher.getInstance(GCM_TRANSFORMATION)
+        cipher.init(Cipher.ENCRYPT_MODE, key)
+        val iv = cipher.iv
+        val encrypted = cipher.doFinal(masterKeyBytes)
+        Pair(
+          Base64.encodeToString(encrypted, Base64.NO_WRAP),
+          Base64.encodeToString(iv, Base64.NO_WRAP)
+        )
+      } catch (e: Exception) {
+        null
+      }
+    }
+
+    fun unwrapMasterKey(encryptedBase64: String, ivBase64: String): ByteArray? {
+      val key = getOrCreateKey() ?: return null
+      return try {
+        val cipher = Cipher.getInstance(GCM_TRANSFORMATION)
+        val iv = Base64.decode(ivBase64, Base64.NO_WRAP)
+        val encrypted = Base64.decode(encryptedBase64, Base64.NO_WRAP)
+        val spec = javax.crypto.spec.GCMParameterSpec(128, iv)
+        cipher.init(Cipher.DECRYPT_MODE, key, spec)
+        cipher.doFinal(encrypted)
+      } catch (e: Exception) {
+        null
+      }
+    }
+  }
+
   fun generateSecurePassword(
     length: Int = 16,
     includeUpper: Boolean = true,
@@ -135,6 +260,40 @@ object CryptoManager {
       score == 3 -> PasswordStrength(PasswordStrengthLevel.FAIR, "Seguridad aceptable")
       score == 4 -> PasswordStrength(PasswordStrengthLevel.GOOD, "Contraseña robusta")
       else -> PasswordStrength(PasswordStrengthLevel.EXCELLENT, "Máxima seguridad criptográfica")
+    }
+  }
+
+  fun shredFile(file: java.io.File): Boolean {
+    return try {
+      if (file.exists()) {
+        val length = file.length()
+        if (length > 0) {
+          java.io.RandomAccessFile(file, "rws").use { raf ->
+            val buffer = ByteArray(4096)
+            // Pass 1: Cryptographic zeros
+            var written = 0L
+            while (written < length) {
+              val toWrite = minOf(buffer.size.toLong(), length - written).toInt()
+              raf.write(buffer, 0, toWrite)
+              written += toWrite
+            }
+            // Pass 2: Cryptographic random bytes
+            raf.seek(0)
+            written = 0L
+            while (written < length) {
+              random.nextBytes(buffer)
+              val toWrite = minOf(buffer.size.toLong(), length - written).toInt()
+              raf.write(buffer, 0, toWrite)
+              written += toWrite
+            }
+          }
+        }
+        file.delete()
+      } else {
+        false
+      }
+    } catch (e: Exception) {
+      file.delete()
     }
   }
 }
