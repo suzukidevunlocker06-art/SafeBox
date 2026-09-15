@@ -1,0 +1,6 @@
+{
+  "name": "SafeBox",
+  "description": "Caja fuerte digital segura para contraseñas, notas confidenciales, tarjetas y documentos con cifrado local AES-256 de conocimiento cero y soporte Android.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

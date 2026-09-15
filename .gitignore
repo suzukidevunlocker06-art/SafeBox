@@ -1,0 +1,56 @@
+# Built application files
+*.apk
+*.aar
+*.aab
+
+# Gradle files
+.gradle/
+build/
+*/build/
+
+# Local configuration file (sdk path, etc)
+local.properties
+
+# Log files
+*.log
+
+# Android Studio / IntelliJ IDEA navigation & workspace
+*.iml
+.idea/
+.idea/caches
+.idea/libraries
+.idea/modules.xml
+.idea/workspace.xml
+.idea/navEditor.xml
+.idea/assetWizardSettings.xml
+
+# Keystore & Signing files (NEVER COMMIT SECRETS)
+*.jks
+*.keystore
+*.keystore*
+*.jks*
+my-upload-key.jks
+debug.keystore
+debug.keystore*
+*.base64
+*.key
+*.p12
+*.pem
+*.token
+*.secret
+
+# Google Services & Environment secrets
+google-services.json
+.env
+.env.local
+secrets.properties
+
+# External Native Build
+.externalNativeBuild
+.cxx
+
+# OS generated
+.DS_Store
+Thumbs.db
+captures/
+
